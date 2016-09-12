@@ -1,6 +1,11 @@
 <?php
-//изменения в системном файле стр. 90
-		//\vendor\laravel\lumen-framework\src\Routing\ProvidesConvenienceMethods.php
+/**
+ * class AccountsController extends Controller
+ *
+ * изменения в системном файле стр. 90
+ * vendor\laravel\lumen-framework\src\Routing\ProvidesConvenienceMethods.php
+ * 
+ */
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -13,7 +18,9 @@ use Illuminate\Http\Response;
 class AccountsController extends Controller
 {
     /**
-     * Show the form for creating a new resource.
+     * public function listAccounts()
+	 *
+	 * List account.
      *
      * @return \Illuminate\Http\Response
      */
@@ -25,9 +32,15 @@ class AccountsController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * public function createAccount(Request $request)
+	 *
+	 * Create account.
+	 * screen_name обязательный параметр, по account_id получить данные с твиттера не получилось
+	 * добавил screen_name 
+	 * подробно здесь
+	 * https://dev.twitter.com/rest/reference/get/users/show
      *
-     * @param  \Illuminate\Http\Request  $request
+	 * @param  Request $request
      * @return \Illuminate\Http\Response
      */
     public function createAccount(Request $request)
@@ -35,7 +48,7 @@ class AccountsController extends Controller
 		$this->validate($request, [
 			'refresh_interval' => 'required|string',
 			'account_id' => 'required|string',
-			'screen_name' => 'string'
+			'screen_name' => 'required|string'
 		]);
 
 		$account = new Account;
@@ -43,9 +56,12 @@ class AccountsController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * public function editAccount( Request $request, $account_id)
      *
-     * @param  int  $id
+	 * Edit account
+	 *
+     * @param  Request $request
+	 * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function editAccount( Request $request, $account_id)
@@ -59,9 +75,11 @@ class AccountsController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * public function deleteAccount($account_id)
+	 *
+	 * Delete account
      *
-     * @param  int  $id
+     * @param  int  $account_id
      * @return \Illuminate\Http\Response
      */
     public function deleteAccount($account_id)
@@ -74,10 +92,12 @@ class AccountsController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * public function listPosts($account_id, $limit = 100)
+	 *
+	 * List posts
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  int  $limit
      * @return \Illuminate\Http\Response
      */
     public function listPosts($account_id, $limit = 100)
@@ -87,7 +107,15 @@ class AccountsController extends Controller
 
 		return (new Response($arr, 200))->header('Content-Type', 'json');
 	}
-
+	
+    /**
+     * public function getTwitterPosts($limit = 100)
+	 *
+	 * Get twitter posts
+     *
+     * @param  int  $limit
+     * @return void
+     */
     public function getTwitterPosts($limit = 100)
     {
 		$account = new Account;

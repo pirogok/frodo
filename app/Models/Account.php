@@ -1,5 +1,10 @@
 <?php
-
+/**
+ * class Account extends Model
+ *
+ * Model for Account
+ * 
+ */
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -8,13 +13,33 @@ use DB;
 
 class Account extends Model
 {	
-
+    /**
+     * private $twitter
+	 *
+	 * instance twitter
+     */
 	private $twitter = NULL;
 
-	private function instanceTwitter() {
+    /**
+     * private function instanceTwitter() 
+	 *
+	 * $this->twitter = new Twitter;
+     *
+     * @return void
+     */
+	private function instanceTwitter() 
+	{
 		return $this->twitter = new Twitter;
 	}
 
+    /**
+     * public function createAccount($data)
+	 *
+	 * Create account
+     *
+	 * @param  obj $data
+     * @return array
+     */
 	public function createAccount($data)
 	{
 		$this->instanceTwitter();
@@ -35,9 +60,19 @@ class Account extends Model
 		}
 	}
 
+    /**
+     * public function listAccounts()
+	 *
+	 * List accounts
+	 * Уточнить старт, лимит, количество (метаданные) для пагинации
+	 * Надо научить скрипт выбирать частями, например 100 записей начиная с 200
+	 * В задании не требуется
+     *
+	 * @param  obj $data
+     * @return array
+     */
 	public function listAccounts()
 	{
-		// Уточнить старт, лимит, количество (метаданные) в задании не требуется?!
 		$result = DB::select('SELECT * FROM accounts'); 
 
 		if ($result) {
@@ -47,6 +82,14 @@ class Account extends Model
 		}
 	}
 
+    /**
+     * public function getAccount($account_id)
+	 *
+	 * get one accounts
+     *
+	 * @param  scalar $account_id
+     * @return array
+     */
 	public function getAccount($account_id)
 	{
 		$arr = DB::select('SELECT * FROM accounts WHERE account_id = ?', [$account_id]); 
@@ -58,6 +101,15 @@ class Account extends Model
 		}
 	}
 
+    /**
+     * public function listPosts($account_id, $limit)
+	 *
+	 * get one accounts
+     *
+	 * @param  scalar $account_id
+	 * @param  int $limit
+     * @return array
+     */
 	public function listPosts($account_id, $limit)
 	{
 		$arr = DB::select('SELECT * FROM posts WHERE account_id = ? LIMIT ?', [$account_id, $limit]);
@@ -69,6 +121,15 @@ class Account extends Model
 		}
 	}	
 
+    /**
+     * public function editAccount($account_id, $data)
+	 *
+	 * edit account
+     *
+	 * @param  scalar $account_id
+	 * @param  post $data
+     * @return array
+     */
 	public function editAccount($account_id, $data)
 	{
 		$affected = DB::update('UPDATE accounts SET refresh_interval = ? WHERE account_id = ?', [$data['refresh_interval'], $account_id]); 
@@ -81,6 +142,14 @@ class Account extends Model
 		}
 	}
 
+    /**
+     * public function deleteAccount($account_id)
+	 *
+	 * delete account
+     *
+	 * @param  scalar $account_id
+     * @return array
+     */
 	public function deleteAccount($account_id)
 	{
 		$deleted = DB::table('accounts')->where('account_id', '=', $account_id)->delete();
@@ -92,35 +161,46 @@ class Account extends Model
 		}
 	}
 	
+    /**
+     * public function getHotAccount()
+	 *
+	 * Get hot account for twitter
+     * алгоритм позволяе не исполбзовать трансакции, если понадобится - раскоментировать
+	 * можно выбрать не используя поля статус, как то так
+	 * SELECT * FROM `accounts` WHERE `updated_at` < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL `refresh_interval` HOUR
+	 * будет на 1 запрос меньше, но в перспективе если будет много данных по статусу можно будет выбирать частями
+	 * чтоб не перерасходовать память
+	 * Изменяем статус аккаунтов время у которых от последнего апдейта меньше интервала
+	 * выбирае по статусу hot
+	 * Изменяем время последнего апдейта и статус
+	 * 
+     * @return array
+     */
 	public function getHotAccount()
 	{
-		// алгоритм позволяе не исполбзовать трансакции, если понадобится - раскоментировать
 		//DB::transaction(function () {
-			
-		// можно выбрать не используя поля статус, как то так
-		// SELECT * FROM `accounts` WHERE `updated_at` < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL `refresh_interval` HOUR
-		// будет на 1 запрос меньше, но в перспективе если будет много данных по статусу можно будет выбирать частями
-		// чтоб не перерасходовать память
-			
-		// Изменяем статус аккаунтов время у которых от последнего апдейта меньше интервала
 		DB::update('UPDATE `accounts` SET `status` = \'hot\' WHERE `updated_at` < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL `refresh_interval` HOUR)'); 
 		
-		// выбирае по статусу hot
 		$accounts = DB::select('SELECT * FROM `accounts` WHERE status = \'hot\'');
 		
-		// Изменяем время последнего апдейта и статус
 		DB::update('UPDATE `accounts` SET `status` = \'new\', `updated_at` = CURRENT_TIMESTAMP WHERE status = \'hot\'');
 		//});
 		
 		return $accounts;
 	}	
-	
+
+	/**
+     * public function insertTwitts($arr, $account_id)
+	 *
+	 * Какой то косяк мускула. Возвращает true даже если срабатывает INSERT IGNORE
+     * поэтому лишний запрос
+	 * 
+     * @return void
+     */
 	public function insertTwitts($arr, $account_id)
 	{
 		DB::transaction(function () use ($arr, $account_id) {
-			foreach ($arr as $v) {
-				// Какой то косяк мускула. Возвращает true даже если срабатывает INSERT IGNORE
-				// поэтому лишний запрос
+			foreach ($arr as $v) 
 				$count = DB::table('posts')->where('post_id', '=', $v->id)->count();
 
 				if (!$count) {

@@ -200,7 +200,7 @@ class Account extends Model
 	public function insertTwitts($arr, $account_id)
 	{
 		DB::transaction(function () use ($arr, $account_id) {
-			foreach ($arr as $v) 
+			foreach ($arr as $v) {
 				$count = DB::table('posts')->where('post_id', '=', $v->id)->count();
 
 				if (!$count) {

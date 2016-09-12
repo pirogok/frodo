@@ -14,7 +14,7 @@ class CreateAccauntsTable extends Migration
     {
         Schema::create('accaunts', function (Blueprint $table) {
             $table->increments('id');
-			$table->bigInteger('account_id');
+			$table->bigInteger('account_id')->unsigned();
 			$table->string('screen_name', 225);
 			$table->integer('refresh_interval');
 			$table->integer('posts number');
